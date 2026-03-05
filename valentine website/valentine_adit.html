@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Valentine's Royal Arena 💕</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Georgia', serif;
+  overflow: hidden;
+  width: 100vw; height: 100vh;
+  background: #000;
+  display: flex; justify-content: center; align-items: center;
+}
+
+.screen {
+  position: absolute;
+  width: 100%; height: 100%;
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+.screen.active { display: flex; }
+
+/* ===== SCREEN 1: HOME ===== */
+#screen-home { position: relative; overflow: hidden; }
+#home-bg {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  position: absolute; top:0; left:0;
+}
+
+/* Battle button overlay - bottom center, over the yellow "Battle" button */
+#battle-btn-area {
+  position: absolute;
+  bottom: 10.5%;
+  left: 30%;
+  width: 22%;
+  height: 9%;
+  cursor: pointer;
+  z-index: 10;
+  border-radius: 10px;
+  background: transparent;
+  border: none;
+  transition: background 0.15s;
+}
+#battle-btn-area:hover { background: rgba(0,0,0,0.15); }
+#battle-btn-area.clicked { background: rgba(0,0,0,0.45); }
+
+/* Party button overlay */
+#party-btn-area {
+  position: absolute;
+  bottom: 10.5%;
+  left: 55%;
+  width: 24%;
+  height: 9%;
+  cursor: pointer;
+  z-index: 10;
+  border-radius: 10px;
+  background: transparent;
+  border: none;
+}
+#party-btn-area:hover { background: rgba(255,255,255,0.1); }
+
+/* Pass Royale button */
+#pass-btn-area {
+  position: absolute;
+  top: 3%;
+  right: 2%;
+  width: 28%;
+  height: 12%;
+  cursor: pointer;
+  z-index: 10;
+  border-radius: 12px;
+  background: transparent;
+  border: none;
+}
+#pass-btn-area:hover { background: rgba(255,255,255,0.1); }
+
+/* Kisses tooltip */
+#kisses-toast {
+  position: absolute;
+  top: 18%;
+  right: 3%;
+  background: linear-gradient(135deg, #ff3366, #ff80aa);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-size: clamp(11px, 2.5vw, 16px);
+  font-weight: bold;
+  box-shadow: 0 4px 16px #ff336688;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.4s;
+  z-index: 20;
+  pointer-events: none;
+  text-align: center;
+}
+#kisses-toast.show { opacity: 1; transform: translateY(0); }
+
+/* Sprinkle particles */
+.sprinkle {
+  position: fixed;
+  pointer-events: none;
+  z-index: 999;
+  font-size: 18px;
+  animation: sprinkleFall linear forwards;
+}
+@keyframes sprinkleFall {
+  0% { opacity: 1; transform: translateY(-20px) rotate(0deg); }
+  100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
+}
+
+/* ===== SCREEN 2: BATTLE ===== */
+#screen-battle { position: relative; overflow: hidden; }
+#battle-bg {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  position: absolute; top:0; left:0;
+}
+
+/* Timer overlay */
+#timer-display {
+  position: absolute;
+  top: 2%;
+  right: 2%;
+  color: white;
+  font-size: clamp(16px, 4vw, 28px);
+  font-weight: 900;
+  font-family: 'Georgia', serif;
+  text-shadow: 2px 2px 0 #000, -1px -1px 0 #000;
+  background: rgba(0,0,0,0.55);
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 2px solid rgba(255,255,255,0.3);
+  z-index: 20;
+  letter-spacing: 1px;
+}
+
+/* Blush overlay top half */
+#blush-overlay {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 55%;
+  background: rgba(255,60,100,0);
+  transition: background 0.8s ease;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Card bar bottom */
+#card-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 24%;
+  background: linear-gradient(to top, rgba(10,5,30,0.98), rgba(10,5,30,0.85));
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  padding: 5px 8px 6px;
+  border-top: 2px solid rgba(140,80,200,0.5);
+}
+
+/* Elixir bar styled to match screenshot */
+#elixir-bar-wrap {
+  width: 92%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#elixir-num {
+  width: 28px; height: 28px;
+  background: radial-gradient(circle, #bb44ff, #7700cc);
+  border-radius: 50%;
+  border: 2px solid #fff;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 13px; font-weight: bold;
+  box-shadow: 0 2px 8px #7700ccaa;
+  flex-shrink: 0;
+}
+#elixir-track {
+  flex: 1;
+  height: 14px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 8px;
+  border: 1.5px solid rgba(160,60,255,0.5);
+  overflow: hidden;
+}
+#elixir-fill {
+  height: 100%;
+  width: 80%;
+  background: linear-gradient(90deg, #9933ff, #cc66ff);
+  border-radius: 8px;
+  transition: width 0.35s linear;
+  box-shadow: 0 0 10px #9933ffaa;
+}
+
+/* Cards row */
+#cards-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.card {
+  position: relative;
+  width: 18vw;
+  max-width: 90px;
+  aspect-ratio: 3/4;
+  border-radius: 8px;
+  background: linear-gradient(160deg, #1a1a2e, #0d0d1f);
+  border: 2px solid #443366;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1);
+  transition: transform 0.2s, filter 0.4s, box-shadow 0.3s;
+}
+.card-img {
+  width: 100%; height: 78%;
+  object-fit: cover;
+  border-radius: 4px 4px 0 0;
+}
+.card-img-placeholder {
+  width: 100%; height: 78%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(20px, 5vw, 32px);
+  background: linear-gradient(135deg, #1a1a3e, #2a1a4e);
+}
+.card-name {
+  font-size: clamp(5px, 1.2vw, 8px);
+  color: #ccd6ff;
+  text-align: center;
+  padding: 2px 1px;
+  font-weight: bold;
+  letter-spacing: 0.3px;
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+}
+.elixir-cost {
+  position: absolute;
+  top: -8px; right: -7px;
+  width: 20px; height: 20px;
+  background: radial-gradient(circle, #cc44ff, #8800cc);
+  border-radius: 50%;
+  border: 2px solid #fff;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 10px; font-weight: bold;
+  box-shadow: 0 2px 6px #8800ccaa;
+  z-index: 2;
+}
+.card.insufficient {
+  filter: grayscale(100%) brightness(0.5);
+  cursor: not-allowed;
+}
+.card:not(.insufficient):hover {
+  transform: translateY(-5px) scale(1.06);
+  box-shadow: 0 0 16px #ff80b0aa, 0 4px 10px rgba(0,0,0,0.5);
+  border-color: #ff80b0;
+}
+.card:not(.insufficient).ready-glow {
+  animation: cardGlow 1.5s ease-in-out;
+}
+@keyframes cardGlow {
+  0% { box-shadow: 0 0 0 transparent; }
+  50% { box-shadow: 0 0 20px #ff80b0cc; }
+  100% { box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+}
+
+/* Heart particles */
+.heart-particle {
+  position: fixed;
+  pointer-events: none;
+  z-index: 999;
+  animation: floatHeart 1.4s ease-out forwards;
+}
+@keyframes floatHeart {
+  0% { opacity:1; transform: translateY(0) scale(1); }
+  100% { opacity:0; transform: translateY(-90px) scale(1.8); }
+}
+
+/* ===== SCREEN 3: VICTORY ===== */
+#screen-victory { position: relative; overflow: hidden; cursor: pointer; }
+#victory-bg {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  position: absolute; top:0; left:0;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+#victory-bg.show { opacity: 1; }
+#victory-click-hint {
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255,255,255,0.85);
+  font-size: clamp(12px, 3vw, 18px);
+  font-style: italic;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  animation: pulseTxt 1.5s ease-in-out infinite;
+  z-index: 10;
+}
+@keyframes pulseTxt {
+  0%,100% { opacity:1; }
+  50% { opacity:0.5; }
+}
+
+/* ===== SCREEN 4: CHEST ===== */
+#screen-chest { position: relative; overflow: hidden; background: #2a0a3a; cursor: pointer; }
+#chest-bg {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  position: absolute; top:0; left:0;
+  transition: opacity 0.4s;
+}
+#chest-click-hint {
+  position: absolute;
+  bottom: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #ffd700;
+  font-size: clamp(12px, 3vw, 20px);
+  font-weight: bold;
+  text-shadow: 0 0 10px #ff6600, 2px 2px 4px rgba(0,0,0,0.8);
+  animation: pulseTxt 1.2s ease-in-out infinite;
+  z-index: 10;
+}
+#chest-fade-layer {
+  position: absolute;
+  top:0;left:0;right:0;bottom:0;
+  background: rgba(0,0,0,0);
+  pointer-events: none;
+  z-index: 5;
+  transition: background 0.5s;
+}
+
+/* ===== SCREEN 5: LETTER ===== */
+#screen-letter {
+  background: radial-gradient(ellipse at center, #1a0a2e, #0d0018);
+  position: relative;
+  overflow: hidden;
+  flex-direction: column;
+}
+.star-bg {
+  position: absolute;
+  width: 3px; height: 3px;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle linear infinite;
+}
+@keyframes twinkle {
+  0%,100% { opacity:0.3; }
+  50% { opacity:1; }
+}
+
+#scroll-wrap {
+  position: relative;
+  width: min(88vw, 380px);
+  max-height: 85vh;
+  z-index: 10;
+  transform: scaleY(0);
+  transform-origin: top center;
+  transition: transform 0.7s cubic-bezier(0.34,1.56,0.64,1);
+  overflow-y: auto;
+}
+#scroll-wrap.open { transform: scaleY(1); }
+#scroll-inner {
+  background: linear-gradient(160deg, #fef5d4, #fde9a2 40%, #fef5d4);
+  border-radius: 10px;
+  padding: 22px 20px 20px;
+  position: relative;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.6);
+  border: 2px solid #d4a052;
+}
+#scroll-inner::before {
+  content: '';
+  position: absolute;
+  top: -14px; left: 0; right: 0; height: 14px;
+  background: linear-gradient(90deg, #b07830, #e8b870, #b07830);
+  border-radius: 10px 10px 0 0;
+}
+#scroll-inner::after {
+  content: '';
+  position: absolute;
+  bottom: -14px; left: 0; right: 0; height: 14px;
+  background: linear-gradient(90deg, #b07830, #e8b870, #b07830);
+  border-radius: 0 0 10px 10px;
+}
+.kiss-mark {
+  position: absolute;
+  font-size: 14px;
+  opacity: 0.3;
+  transform: rotate(var(--r));
+}
+#letter-text {
+  color: #5a2800;
+  font-family: 'Georgia', serif;
+  font-size: clamp(10px, 2.8vw, 14px);
+  line-height: 1.65;
+  white-space: pre-line;
+}
+#proposal-line {
+  font-size: clamp(14px, 4vw, 20px);
+  font-weight: bold;
+  color: #cc2255;
+  text-align: center;
+  margin-top: 12px;
+  font-style: italic;
+}
+#btn-row {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 14px;
+  align-items: center;
+  min-height: 54px;
+}
+.ans-btn {
+  padding: 10px 22px;
+  border-radius: 30px;
+  border: none;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.25s, box-shadow 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+#btn-yes {
+  background: linear-gradient(135deg, #ff3366, #ff80aa);
+  color: white;
+}
+#btn-no {
+  background: linear-gradient(135deg, #888, #bbb);
+  color: white;
+}
+.ans-btn:hover { transform: scale(1.08); }
+
+/* ===== SCREEN 6: FINAL ===== */
+#screen-final {
+  position: relative;
+  overflow: hidden;
+  background: #1a0028;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+#final-bg {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  position: absolute; top:0; left:0;
+}
+#big-heart {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  font-size: 50vw;
+  z-index: 20;
+  pointer-events: none;
+  line-height: 1;
+}
+#big-heart.expanding {
+  animation: heartExpand 2.8s ease-in-out forwards;
+}
+@keyframes heartExpand {
+  0% { transform: translate(-50%,-50%) scale(0); opacity:1; }
+  60% { transform: translate(-50%,-50%) scale(1.5); opacity:1; }
+  100% { transform: translate(-50%,-50%) scale(2.2); opacity:0; }
+}
+
+/* Falling hearts */
+.shower-heart {
+  position: fixed;
+  top: -50px;
+  pointer-events: none;
+  animation: fallHeart linear forwards;
+  z-index: 100;
+}
+@keyframes fallHeart {
+  0% { opacity:1; transform: translateY(0) rotate(0deg); }
+  100% { opacity:0; transform: translateY(110vh) rotate(360deg); }
+}
+
+/* Flash transition */
+#flash {
+  position: fixed;
+  top:0;left:0;right:0;bottom:0;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 500;
+  transition: opacity 0.3s;
+}
+</style>
+</head>
+<body>
+
+<div id="flash"></div>
+
+<!-- ===== SCREEN 1: HOME ===== -->
+<div id="screen-home" class="screen active">
+  <img id = "home-bg", src = "images\VALENTINE.png">
+  <!-- Battle button -->
+  <button id="battle-btn-area" onclick="clickBattle()"></button>
+  <!-- Party button -->
+  <button id="party-btn-area" onclick="clickParty()"></button>
+  <!-- Pass Royale button -->
+  <button id="pass-btn-area" onclick="clickPass()"></button>
+  <div id="kisses-toast">💋 Pay with 25 Kisses 💋</div>
+</div>
+
+<!-- ===== SCREEN 2: BATTLE ===== -->
+<div id="screen-battle" class="screen">
+  <img id = "battle-bg", src = "images\2.png">  <div id="blush-overlay"></div>
+  <div id="timer-display">2:00</div>
+  <div id="card-bar">
+    <div id="elixir-bar-wrap">
+      <div id="elixir-num">8</div>
+      <div id="elixir-track"><div id="elixir-fill" style="width:80%"></div></div>
+    </div>
+    <div id="cards-row"></div>
+  </div>
+</div>
+
+<!-- ===== SCREEN 3: VICTORY ===== -->
+<div id="screen-victory" class="screen" onclick="goToChest()">
+  <img id = "victory-bg", src = "images\3.png">  <div id="victory-click-hint">Tap to claim your reward ✨</div>
+</div>
+
+<!-- ===== SCREEN 4: CHEST ===== -->
+<div id="screen-chest" class="screen" onclick="clickChest()">
+  <img id = "chest-bg", src = "images\4.png">  <div id="chest-fade-layer"></div>
+  <div id="chest-click-hint">💝 Tap to open 💝</div>
+</div>
+
+<!-- ===== SCREEN 5: LETTER ===== -->
+<div id="screen-letter" class="screen">
+  <!-- star background generated by JS -->
+  <div id="scroll-wrap">
+    <div id="scroll-inner">
+      <span class="kiss-mark" style="top:12px;left:8px;--r:-25deg">💋</span>
+      <span class="kiss-mark" style="top:18px;right:10px;--r:20deg">💋</span>
+      <span class="kiss-mark" style="bottom:24px;left:10px;--r:15deg">💋</span>
+      <span class="kiss-mark" style="bottom:22px;right:9px;--r:-18deg">💋</span>
+      <span class="kiss-mark" style="top:50%;left:5px;--r:5deg">💋</span>
+      <span class="kiss-mark" style="top:50%;right:5px;--r:-8deg">💋</span>
+      <div id="letter-text">Hi Tirru,
+
+My adorable baby,
+
+Every moment with you feels like winning an entire arena. Not because of the victory itself, but because you're there beside me. I cherish you even more than you cherish Mega Knight, and that says everything.
+
+I want every happy moment in my life to be one that I share with you, every laugh, every small victory, every silly little memory. And I want the sad moments with you too, because when the world feels heavy, I want to be the one beside you, holding you through it, and I want to find my strength in you when I need it.
+
+Life may not place laughter at every corner, and the road won't always be easy. But as long as I can find you standing beside me, nothing else really matters. Your presence turns ordinary moments into something magical.
+
+I hope for countless more Valentines with you, more memories, more smiles, more quiet moments where it's just us against the world.
+
+I love you, Tirru. 💕</div>
+      <div id="proposal-line">Will you be my Valentine? 💝</div>
+      <div id="btn-row">
+        <button class="ans-btn" id="btn-yes" onclick="clickYes()">Yes 💖</button>
+        <button class="ans-btn" id="btn-no" onclick="clickNo()">No</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN 6: FINAL ===== -->
+<div id="screen-final" class="screen">
+  <img id = "final-bg", src = "images\5.png">  <div id="big-heart">❤️</div>
+</div>
+
+<script>
+// ===== STATE =====
+let elixir = 8;
+const MAX_ELIXIR = 10;
+let cardsPlayed = 0;
+let chestClicks = 0;
+let noClickCount = 0;
+let elixirInterval = null;
+let timerInterval = null;
+let timerSecs = 120;
+let battleStarted = false;
+
+const CARDS = [
+  { name: "Kiss",         emoji: "😘", cost: 4 },
+  { name: "Hug",          emoji: "🤗", cost: 4 },
+  { name: "Wink",         emoji: "😉", cost: 2 },
+  { name: "Forehead Kiss",emoji: "🥰", cost: 3 },
+  { name: "Flowers",      emoji: "💐", cost: 5 },
+];
+
+// ===== TRANSITIONS =====
+function flashTransition(cb) {
+  const f = document.getElementById("flash");
+  f.style.opacity = "1";
+  f.style.pointerEvents = "all";
+  setTimeout(() => {
+    cb();
+    setTimeout(() => {
+      f.style.opacity = "0";
+      f.style.pointerEvents = "none";
+    }, 200);
+  }, 320);
+}
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+// ===== SCREEN 1 =====
+function clickBattle() {
+  const btn = document.getElementById("battle-btn-area");
+  btn.classList.add("clicked");
+  setTimeout(() => {
+    flashTransition(() => {
+      showScreen("screen-battle");
+      initBattle();
+    });
+  }, 350);
+}
+
+function clickParty() {
+  spawnSprinkles();
+}
+
+function clickPass() {
+  const toast = document.getElementById("kisses-toast");
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 2800);
+}
+
+function spawnSprinkles() {
+  const items = ["🎊","🎉","💕","✨","🌸","💖","⭐","🌟","🎈","💝"];
+  for (let i = 0; i < 50; i++) {
+    setTimeout(() => {
+      const s = document.createElement("div");
+      s.className = "sprinkle";
+      s.textContent = items[Math.floor(Math.random() * items.length)];
+      s.style.left = (Math.random() * 100) + "vw";
+      s.style.top = "-30px";
+      s.style.fontSize = (14 + Math.random() * 16) + "px";
+      const dur = 1.5 + Math.random() * 2;
+      s.style.animationDuration = dur + "s";
+      s.style.animationDelay = (Math.random() * 0.3) + "s";
+      document.body.appendChild(s);
+      setTimeout(() => s.remove(), (dur + 0.5) * 1000);
+    }, i * 60);
+  }
+}
+
+// ===== SCREEN 2: BATTLE =====
+function initBattle() {
+  if (battleStarted) return;
+  battleStarted = true;
+  cardsPlayed = 0;
+  elixir = 8;
+  timerSecs = 120;
+  document.getElementById("blush-overlay").style.background = "rgba(255,60,100,0)";
+  updateElixirUI();
+  buildCards();
+
+  clearInterval(elixirInterval);
+  elixirInterval = setInterval(() => {
+    if (elixir < MAX_ELIXIR) {
+      elixir = Math.min(MAX_ELIXIR, elixir + 1);
+      updateElixirUI();
+      refreshCardStates();
+    }
+  }, 3000);
+
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timerSecs--;
+    if (timerSecs < 0) timerSecs = 0;
+    const m = Math.floor(timerSecs / 60);
+    const s = timerSecs % 60;
+    document.getElementById("timer-display").textContent = m + ":" + (s < 10 ? "0" + s : s);
+    if (timerSecs === 0) clearInterval(timerInterval);
+  }, 1000);
+}
+
+function updateElixirUI() {
+  const pct = (elixir / MAX_ELIXIR) * 100;
+  document.getElementById("elixir-fill").style.width = pct + "%";
+  document.getElementById("elixir-num").textContent = elixir;
+}
+
+function buildCards() {
+  const CARD_IMAGES = [
+    "elixir_cards\coolstuff.jpeg",  // Kiss
+    "elixir_cards\grabbygrabby.jpeg",  // Hug
+    "elixir_cards\cute_look.jpeg",  // Wink
+    "elixir_cards\kisses.jpeg",  // Forehead Kiss
+    "elixir_cards\soadorbs.jpeg",  // Flowers
+  ];
+  const row = document.getElementById("cards-row");
+  row.innerHTML = "";
+  CARDS.forEach((c, i) => {
+    const div = document.createElement("div");
+    div.className = "card" + (elixir < c.cost ? " insufficient" : "");
+    div.dataset.index = i;
+    div.innerHTML =
+      `<div class="elixir-cost">${c.cost}</div>
+       <img class="card-img" src="${CARD_IMAGES[i]}" alt="${c.name}">
+       <div class="card-name">${c.name}</div>`;
+    div.addEventListener("click", () => playCard(i, div));
+    row.appendChild(div);
+  });
+}
+
+function refreshCardStates() {
+  document.querySelectorAll(".card").forEach(card => {
+    const idx = parseInt(card.dataset.index);
+    const was = card.classList.contains("insufficient");
+    if (elixir >= CARDS[idx].cost) {
+      if (was) {
+        card.classList.remove("insufficient");
+        card.classList.add("ready-glow");
+        setTimeout(() => card.classList.remove("ready-glow"), 1500);
+      }
+    } else {
+      card.classList.add("insufficient");
+    }
+  });
+}
+
+function playCard(idx, el) {
+  const c = CARDS[idx];
+  if (elixir < c.cost) return;
+  elixir -= c.cost;
+  updateElixirUI();
+  refreshCardStates();
+  spawnHearts(el);
+  cardsPlayed++;
+  const alpha = Math.min(0.6, cardsPlayed * 0.14);
+  document.getElementById("blush-overlay").style.background = `rgba(255,60,100,${alpha})`;
+  if (cardsPlayed >= 4) {
+    clearInterval(elixirInterval);
+    clearInterval(timerInterval);
+    setTimeout(goToVictory, 700);
+  }
+}
+
+function spawnHearts(el) {
+  const rect = el.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  for (let i = 0; i < 9; i++) {
+    const h = document.createElement("div");
+    h.className = "heart-particle";
+    h.textContent = ["❤️","💕","💗","💓","💖"][Math.floor(Math.random()*5)];
+    h.style.left = (cx + (Math.random()-0.5)*44) + "px";
+    h.style.top = cy + "px";
+    h.style.animationDuration = (0.9 + Math.random()*0.5) + "s";
+    h.style.animationDelay = (Math.random()*0.3) + "s";
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 2000);
+  }
+}
+
+// ===== SCREEN 3: VICTORY =====
+function goToVictory() {
+  flashTransition(() => {
+    showScreen("screen-victory");
+    setTimeout(() => {
+      document.getElementById("victory-bg").classList.add("show");
+    }, 100);
+    // heart burst
+    for (let i = 0; i < 25; i++) {
+      setTimeout(() => {
+        const h = document.createElement("div");
+        h.className = "heart-particle";
+        h.textContent = ["❤️","💕","💖","💝"][Math.floor(Math.random()*4)];
+        h.style.fontSize = (14 + Math.random()*22) + "px";
+        h.style.left = (10 + Math.random()*80) + "vw";
+        h.style.top = (20 + Math.random()*60) + "vh";
+        document.body.appendChild(h);
+        setTimeout(() => h.remove(), 2500);
+      }, i * 80);
+    }
+  });
+}
+
+// ===== SCREEN 4: CHEST =====
+function goToChest() {
+  flashTransition(() => {
+    showScreen("screen-chest");
+    chestClicks = 0;
+    document.getElementById("chest-fade-layer").style.background = "rgba(0,0,0,0)";
+  });
+}
+
+function clickChest() {
+  if (chestClicks >= 4) return;
+  chestClicks++;
+  const darkness = chestClicks * 0.22;
+  document.getElementById("chest-fade-layer").style.background = `rgba(0,0,0,${darkness})`;
+  if (chestClicks >= 4) {
+    setTimeout(() => {
+      flashTransition(() => {
+        showScreen("screen-letter");
+        openLetter();
+      });
+    }, 400);
+  }
+}
+
+// ===== SCREEN 5: LETTER =====
+function openLetter() {
+  // generate stars
+  const letterScreen = document.getElementById("screen-letter");
+  for (let i = 0; i < 60; i++) {
+    const star = document.createElement("div");
+    star.className = "star-bg";
+    star.style.left = (Math.random() * 100) + "vw";
+    star.style.top = (Math.random() * 100) + "vh";
+    star.style.animationDuration = (2 + Math.random() * 3) + "s";
+    star.style.animationDelay = (Math.random() * 3) + "s";
+    letterScreen.appendChild(star);
+  }
+  // heart shower
+  heartShower();
+  setTimeout(() => {
+    document.getElementById("scroll-wrap").classList.add("open");
+  }, 700);
+}
+
+function clickYes() {
+  heartShower();
+  setTimeout(() => {
+    flashTransition(() => {
+      showScreen("screen-final");
+      startFinalScene();
+    });
+  }, 800);
+}
+
+function clickNo() {
+  noClickCount++;
+  const yesBtn = document.getElementById("btn-yes");
+  const noBtn = document.getElementById("btn-no");
+  const yesScale = 1 + noClickCount * 0.28;
+  const noScale = Math.max(0.45, 1 - noClickCount * 0.18);
+  yesBtn.style.transform = `scale(${yesScale})`;
+  noBtn.style.transform = `scale(${noScale})`;
+  noBtn.style.opacity = Math.max(0.08, 1 - noClickCount * 0.24);
+  if (noClickCount >= 4) {
+    noBtn.style.display = "none";
+    yesBtn.style.transform = "scale(1.8)";
+  }
+}
+
+function heartShower() {
+  for (let i = 0; i < 40; i++) {
+    const h = document.createElement("div");
+    h.className = "shower-heart";
+    h.textContent = ["❤️","💕","💖","💗","💘","💝"][Math.floor(Math.random()*6)];
+    h.style.left = (Math.random() * 100) + "vw";
+    h.style.fontSize = (14 + Math.random()*24) + "px";
+    const dur = 1.5 + Math.random() * 2;
+    h.style.animationDuration = dur + "s";
+    h.style.animationDelay = (Math.random() * 0.8) + "s";
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), (dur + 1) * 1000);
+  }
+}
+
+// ===== SCREEN 6: FINAL =====
+function startFinalScene() {
+  heartShower();
+  setTimeout(() => {
+    const bh = document.getElementById("big-heart");
+    bh.classList.add("expanding");
+    setTimeout(() => { bh.style.opacity = "0"; }, 2900);
+  }, 1600);
+}
+</script>
+</body>
+</html>
