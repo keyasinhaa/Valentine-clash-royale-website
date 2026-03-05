@@ -696,11 +696,11 @@ function updateElixirUI() {
 
 function buildCards() {
   const CARD_IMAGES = [
-    "elixir_cards/coolstuff.jpeg",  // Kiss
-    "elixir_cards/grabbygrabby.jpeg",  // Hug
-    "elixir_cards/cute_look.jpeg",  // Wink
-    "elixir_cards/kisses.jpeg",  // Forehead Kiss
-    "elixir_cards/soadorbs.jpeg",  // Flowers
+    "elixir_cards\coolstuff.jpeg",  // Kiss
+    "elixir_cards\grabbygrabby.jpeg",  // Hug
+    "elixir_cards\cute_look.jpeg",  // Wink
+    "elixir_cards\kisses.jpeg",  // Forehead Kiss
+    "elixir_cards\soadorbs.jpeg",  // Flowers
   ];
   const row = document.getElementById("cards-row");
   row.innerHTML = "";
@@ -710,7 +710,7 @@ function buildCards() {
     div.dataset.index = i;
     div.innerHTML =
       `<div class="elixir-cost">${c.cost}</div>
-       <img class="card-img" src="${CARD_IMAGES[i]}" alt="${c.name}">
+       <img class="card-img", src="${CARD_IMAGES[i]}" alt="${c.name}">
        <div class="card-name">${c.name}</div>`;
     div.addEventListener("click", () => playCard(i, div));
     row.appendChild(div);
@@ -886,4 +886,5 @@ function startFinalScene() {
 </script>
 </body>
 </html>
+
 
