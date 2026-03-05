@@ -506,7 +506,7 @@ body {
 
 <!-- ===== SCREEN 1: HOME ===== -->
 <div id="screen-home" class="screen active">
-  <img id = "home-bg", src = "images\VALENTINE.png">
+  <img id = "home-bg", src = "images/VALENTINE.png">
   <!-- Battle button -->
   <button id="battle-btn-area" onclick="clickBattle()"></button>
   <!-- Party button -->
@@ -518,7 +518,7 @@ body {
 
 <!-- ===== SCREEN 2: BATTLE ===== -->
 <div id="screen-battle" class="screen">
-  <img id = "battle-bg", src = "images\2.png">  <div id="blush-overlay"></div>
+  <img id = "battle-bg", src = "images/2.png">  <div id="blush-overlay"></div>
   <div id="timer-display">2:00</div>
   <div id="card-bar">
     <div id="elixir-bar-wrap">
@@ -531,7 +531,7 @@ body {
 
 <!-- ===== SCREEN 3: VICTORY ===== -->
 <div id="screen-victory" class="screen" onclick="goToChest()">
-  <img id = "victory-bg", src = "images\3.png">  <div id="victory-click-hint">Tap to claim your reward ✨</div>
+  <img id = "victory-bg", src = "images/3.png">  <div id="victory-click-hint">Tap to claim your reward ✨</div>
 </div>
 
 <!-- ===== SCREEN 4: CHEST ===== -->
@@ -575,7 +575,7 @@ I love you, Tirru. 💕</div>
 
 <!-- ===== SCREEN 6: FINAL ===== -->
 <div id="screen-final" class="screen">
-  <img id = "final-bg", src = "images\5.png">  <div id="big-heart">❤️</div>
+  <img id = "final-bg", src = "images/5.png">  <div id="big-heart">❤️</div>
 </div>
 
 <script>
@@ -696,11 +696,11 @@ function updateElixirUI() {
 
 function buildCards() {
   const CARD_IMAGES = [
-    "elixir_cards\coolstuff.jpeg",  // Kiss
-    "elixir_cards\grabbygrabby.jpeg",  // Hug
-    "elixir_cards\cute_look.jpeg",  // Wink
-    "elixir_cards\kisses.jpeg",  // Forehead Kiss
-    "elixir_cards\soadorbs.jpeg",  // Flowers
+    "elixir_cards/Coolstuff.jpeg",  // Kiss
+    "elixir_cards/grabbygrabby.jpeg",  // Hug
+    "elixir_cards/cute_look.jpeg",  // Wink
+    "elixir_cards/kisses.jpeg",  // Forehead Kiss
+    "elixir_cards/soadorbs.jpeg",  // Flowers
   ];
   const row = document.getElementById("cards-row");
   row.innerHTML = "";
@@ -886,5 +886,6 @@ function startFinalScene() {
 </script>
 </body>
 </html>
+
 
 
